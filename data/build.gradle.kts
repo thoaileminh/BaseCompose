@@ -1,43 +1,88 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id(Plugins.ANDROID_LIBRARY)
+    id(Plugins.KOTLIN_ANDROID)
+    id(Plugins.KOVER)
+    id(Plugins.KOTLIN_KAPT)
 }
 
 android {
     namespace = "com.thoaileminh.data"
-    compileSdk = 35
+    compileSdk = Versions.ANDROID_COMPILE_SDK
 
     defaultConfig {
-        applicationId = "com.thoaileminh.data"
-        minSdk = 23
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = Versions.ANDROID_MIN_SDK
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            )
+        }
+
+        debug {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    lint {
+        checkDependencies = true
+        xmlReport = true
+        xmlOutput = file("build/reports/lint/lint-result.xml")
     }
 }
 
 dependencies {
+    implementation(project(Modules.DOMAIN))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    with(Dependencies.AndroidX) {
+        implementation(CORE_KTX)
+        implementation(DATASTORE_PREFERENCES)
+        implementation(SECURITY_CRYPTO)
+    }
+
+    with(Dependencies.Hilt) {
+        implementation(JAVAX_INJECT)
+    }
+
+    with(Dependencies.Network) {
+        api(RETROFIT)
+        api(RETROFIT_CONVERTER_MOSHI)
+
+        api(OKHTTP)
+        api(OKHTTP_LOGGING_INTERCEPTOR)
+
+        api(MOSHI)
+        implementation(MOSHI_ADAPTERS)
+        implementation(MOSHI_KOTLIN)
+    }
+
+    with(Dependencies.Room) {
+        implementation(RUNTIME)
+        implementation(KTX)
+        annotationProcessor(COMPILER)
+        kapt(COMPILER)
+    }
+
+    with(Dependencies.Test) {
+        testImplementation(COROUTINES)
+        testImplementation(JUNIT)
+        testImplementation(KOTEST)
+        testImplementation(MOCKK)
+        testImplementation(ROBOLECTRIC)
+        testImplementation(TEST_CORE)
+        testImplementation(TURBINE)
+    }
 }
